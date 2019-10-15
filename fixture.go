@@ -9,7 +9,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 )
 
-type Fixture struct {
+type FixtureDefinition struct {
 	Channels []Channel `xml:"Channel"`
 	Modes    []Mode    `xml:"Mode"`
 }
@@ -21,6 +21,7 @@ type Mode struct {
 	ChannelMappings []ChannelMapping `xml:"Channel"`
 }
 
+// Physical node in XML
 type Physical struct {
 	Bulp      Bulp      `xml:"Bulp"`
 	Dimension Dimension `xml:"Dimensions"`
@@ -28,12 +29,14 @@ type Physical struct {
 	Focus     Focus     `xml:"Focus"`
 }
 
+// Bulp node in XML
 type Bulp struct {
 	ColorTemperature int    `xml:"ColourTemperature,attr"`
 	Type             string `xml:"Type,attr"`
 	Lumens           int    `xml:"Lumens,attr"`
 }
 
+// Dimension node in XML
 type Dimension struct {
 	Width  float32 `xml:"Width,attr"`
 	Depth  float32 `xml:"Depth,attr"`
@@ -41,23 +44,27 @@ type Dimension struct {
 	Weight float32 `xml:"Weight,attr"`
 }
 
+// Lens node in XML
 type Lens struct {
 	DegreesMin int    `xml:"DegreesMin,attr"`
 	DegreesMax int    `xml:"DegreesMax,attr"`
 	Name       string `xml:"Name,attr"`
 }
 
+// Focus node in XML
 type Focus struct {
 	Type    string `xml:"Type,attr"`
 	TiltMax int    `xml:"TiltMax,attr"`
 	PanMax  int    `xml:"PanMax,attr"`
 }
 
+// Technical node in XML
 type Technical struct {
 	PowerConsumption string `xml:"PowerConsumption,attr"`
 	DmxConnector     string `xml:"DmxConnector,attr"`
 }
 
+// ChannelMapping node in XML
 type ChannelMapping struct {
 	Number      int    `xml:"Number,attr"`
 	ChannelName string `xml:",chardata"`
@@ -98,7 +105,7 @@ func ReadFixture(path string) error {
 
 	byteValue, _ := ioutil.ReadAll(xmlFile)
 
-	var fixture Fixture
+	var fixture FixtureDefinition
 	err = xml.Unmarshal(byteValue, &fixture)
 	if err != nil {
 		fmt.Println(err)
