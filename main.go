@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
-	"qlcplus"
+
+	"github.com/pascalhuerst/go-light/data"
+	"github.com/pascalhuerst/go-light/qlcplus"
 )
 
 func main() {
@@ -15,27 +17,13 @@ func main() {
 
 	qlcplus.Print(qlcFixture)
 
-	//fixture, err := data.NewFixtureFromQlc(qlcFixture)
-	//err = data.
+	fixture := data.NewFixtureFromQlc(qlcFixture)
 
-	/*
-		err := ReadEngine("/home/paso/go/src/github.com/holoplot/go-light/qlcplus/engine.xml")
-		if err != nil {
-			fmt.Printf("%v\n", err.Error())
-			return
-		}
-	*/
+	fmt.Printf("\n\n\n%+v", fixture)
 
-	/*
-		err := ReadFixture("/usr/share/qlcplus/fixtures/Eurolite-LED-TMH-6.qxf")
-		if err != nil {
-			return
-		}
-
-		err := SendFrame()
-		if err != nil {
-			return
-		}
-	*/
+	err = data.WriteFixture(fixture)
+	if err != nil {
+		return
+	}
 
 }

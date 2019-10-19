@@ -5,46 +5,14 @@ import (
 	"fmt"
 	"os"
 
-	"qlcplus"
+	"github.com/pascalhuerst/go-light/qlcplus"
 )
-
-// NewFixtureFromQlc creates a new ficture from a qlcpro fixture
-func NewFixtureFromQlc(source qlcplus.FixtureDefinition) (FixtureDefinition, error) {
-	return FixtureDefinition{
-		manufacturer: "Manufacturer",
-		name:         source.Name,
-		lampType:     ColorChanger,
-		Channels:     source.Channels,
-		Modes:        source.Modes,
-	}, nil
-}
-
-func writeFicture(f FixtureDefinition) error {
-
-	fileName := fmt.Sprintf("%v", f.name)
-
-	file, err := os.OpenFile(fileName, os.O_CREATE, os.ModePerm)
-	if err != nil {
-		fmt.Printf("Cannot open file: %v", err)
-		return err
-	}
-	defer file.Close()
-
-	encoder := json.NewEncoder(file)
-	err = encoder.Encode(f)
-	if err != nil {
-		fmt.Printf("Cannot encode json file: %v", err)
-		return err
-	}
-
-	return nil
-}
 
 // FixtureDefinition data model for a fixture
 type FixtureDefinition struct {
-	manufacturer string   `json:"manufacturer"`
-	name         string   `json:"name"` // Model
-	lampType     LampType `json:"type"`
+	Manufacturer string   `json:"manufacturer"`
+	Name         string   `json:"name"` // Model
+	LampType     LampType `json:"type"`
 
 	Channels []Channel `json:"channel"`
 	Modes    []Mode    `json:"mode"`
@@ -136,8 +104,8 @@ var lampTypeForString = map[LampType]string{
 
 // Mode mode
 type Mode struct {
-	Name            string           `json:"name"`
-	Physical        Physical         `json:"physical"`
+	Name string `json:"name"`
+	// Physical        Physical         `json:"physical"`
 	ChannelMappings []ChannelMapping `json:"channel"`
 }
 
@@ -182,4 +150,93 @@ type Focus struct {
 type Technical struct {
 	PowerConsumption string `json:"power_consumption"`
 	DmxConnector     string `json:"dmx_connector"`
+}
+
+func extractCapabilities(capabilities []qlcplus.Capability) []Capability {
+	var ret []Capability
+	for _, capability := range capabilities {
+		newCapability := Capability{
+			Value: capability.Value,
+			Min:   capability.Min,
+			Max:   capability.Max,
+			Color: capability.Color,
+			Res:   capability.Res,
+		}
+		ret = append(ret, newCapability)
+	}
+	return ret
+}
+
+func extractChannelMappings(channelMappings []qlcplus.ChannelMapping) []ChannelMapping {
+	var ret []ChannelMapping
+	for _, channelMapping := range channelMappings {
+		newChannelMapping := ChannelMapping{
+			Number:      channelMapping.Number,
+			ChannelName: channelMapping.ChannelName,
+		}
+		ret = append(ret, newChannelMapping)
+	}
+	return ret
+}
+
+// NewFixtureFromQlc creates a new ficture from a qlcpro fixture
+func NewFixtureFromQlc(source *qlcplus.FixtureDefinition) FixtureDefinition {
+
+	var newChannels []Channel
+	for _, channel := range source.Channels {
+		var newChannel = Channel{
+			Name: channel.Name,
+			Group: Group{
+				Value: channel.Group.Value,
+				Byte:  channel.Group.Byte,
+			},
+			Capabilities: extractCapabilities(channel.Capabilities),
+		}
+		newChannels = append(newChannels, newChannel)
+	}
+
+	var newModes []Mode
+	for _, mode := range source.Modes {
+		var newMode = Mode{
+			Name:            mode.Name,
+			ChannelMappings: extractChannelMappings(mode.ChannelMappings),
+		}
+		newModes = append(newModes, newMode)
+	}
+
+	ret := FixtureDefinition{
+		Manufacturer: "Manufacturer",
+		Name:         "Name",
+		LampType:     ColorChanger,
+		Channels:     newChannels,
+		Modes:        newModes,
+	}
+
+	return ret
+}
+
+// WriteFixture saves a JSON of a FixtureDefinition
+func WriteFixture(f FixtureDefinition) error {
+
+	fileName := "/home/paso/go/src/github.com/holoplot/go-light/fixture.json" //fmt.Sprintf("./test.json", f.Name)
+
+	file, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		fmt.Printf("Cannot open file: %v\n", err.Error())
+		return err
+	}
+	defer file.Close()
+
+	var byteBuffer []byte
+	byteBuffer, err = json.MarshalIndent(f, "", "  ")
+	if err != nil {
+		fmt.Printf("Cannot marshall JSON: %v\n", err.Error())
+	}
+
+	_, err = file.Write(byteBuffer)
+	if err != nil {
+		fmt.Printf("Cannot write JSON file: %v\n", err.Error())
+	}
+
+	return nil
 }
