@@ -1,4 +1,4 @@
-package main
+package qlcplus
 
 import (
 	"encoding/xml"
@@ -7,8 +7,11 @@ import (
 	"os"
 )
 
-// Engine node in XML
-type Engine struct {
+type Engine interface {
+}
+
+// Root type of this XML
+type Root struct {
 	InputOutputMap InputOutputMap `xml:"InputOutputMap"`
 	Fixtures       []Fixture      `xml:"Fixture"`
 	FixtureGroups  []FixtureGroup `xml:"FixtureGroup"`
@@ -90,8 +93,8 @@ func ReadEngine(path string) error {
 
 	byteValue, _ := ioutil.ReadAll(xmlFile)
 
-	var engine Engine
-	err = xml.Unmarshal(byteValue, &engine)
+	var root Root
+	err = xml.Unmarshal(byteValue, &root)
 	if err != nil {
 		fmt.Println(err)
 		return err
@@ -100,7 +103,7 @@ func ReadEngine(path string) error {
 	//spew.Dump(fixture)
 	println("-----------------------------------------------")
 
-	for _, universe := range engine.InputOutputMap.Universes {
+	for _, universe := range root.InputOutputMap.Universes {
 
 		fmt.Printf("Universe: Name=%v ID=%v\n", universe.Name, universe.ID)
 		fmt.Printf("  Output: Plugin=%v Line=%v\n", universe.Output.Plugin, universe.Output.Line)
@@ -111,10 +114,10 @@ func ReadEngine(path string) error {
 		)
 	}
 
-	fmt.Printf("\n\nTotal Universes: %v\n\n", len(engine.InputOutputMap.Universes))
+	fmt.Printf("\n\nTotal Universes: %v\n\n", len(root.InputOutputMap.Universes))
 	println("-----------------------------------------------")
 
-	for _, fixture := range engine.Fixtures {
+	for _, fixture := range root.Fixtures {
 		fmt.Printf("Fixture\n")
 		fmt.Printf("  Manufacturer=%v\n", fixture.Manufacturer)
 		fmt.Printf("  Model=%v\n", fixture.Model)
@@ -127,10 +130,10 @@ func ReadEngine(path string) error {
 		fmt.Printf("  ExcludeFade=%v\n", fixture.ExcludeFade)
 	}
 
-	fmt.Printf("\n\nTotal Fixtures: %v\n\n", len(engine.Fixtures))
+	fmt.Printf("\n\nTotal Fixtures: %v\n\n", len(root.Fixtures))
 	println("-----------------------------------------------")
 
-	for _, fixtureGroup := range engine.FixtureGroups {
+	for _, fixtureGroup := range root.FixtureGroups {
 		fmt.Printf("FixtureGroup ID=%v Name=%v w=%v h=%v\n",
 			fixtureGroup.ID,
 			fixtureGroup.Name,
@@ -147,10 +150,10 @@ func ReadEngine(path string) error {
 		}
 	}
 
-	fmt.Printf("\n\nTotal FixtureGroups: %v\n\n", len(engine.FixtureGroups))
+	fmt.Printf("\n\nTotal FixtureGroups: %v\n\n", len(root.FixtureGroups))
 	println("-----------------------------------------------")
 
-	for _, channelGroup := range engine.ChannelGroups {
+	for _, channelGroup := range root.ChannelGroups {
 		fmt.Printf("ChannelGroup ID=%v Name=%v Value=%v Channels=%v\n",
 			channelGroup.ID,
 			channelGroup.Name,
@@ -159,7 +162,7 @@ func ReadEngine(path string) error {
 		)
 	}
 
-	fmt.Printf("\n\nTotal ChannelGroups: %v\n\n", len(engine.ChannelGroups))
+	fmt.Printf("\n\nTotal ChannelGroups: %v\n\n", len(root.ChannelGroups))
 	println("-----------------------------------------------")
 
 	return nil

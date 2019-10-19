@@ -1,14 +1,13 @@
-package main
+package qlcplus
 
 import (
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
 	"os"
-
-	"github.com/davecgh/go-spew/spew"
 )
 
+// FixtureDefinition root node of a fixture node in XML
 type FixtureDefinition struct {
 	Channels []Channel `xml:"Channel"`
 	Modes    []Mode    `xml:"Mode"`
@@ -93,14 +92,12 @@ type Capability struct {
 }
 
 // ReadFixture does that
-func ReadFixture(path string) error {
+func ReadFixture(path string) (*FixtureDefinition, error) {
 	xmlFile, err := os.Open(path)
 	if err != nil {
-		fmt.Println(err)
-		return err
+		fmt.Printf("Cannot open file: %v\n", err)
+		return nil, err
 	}
-
-	fmt.Println("Successfully Opened File")
 	defer xmlFile.Close()
 
 	byteValue, _ := ioutil.ReadAll(xmlFile)
@@ -108,12 +105,17 @@ func ReadFixture(path string) error {
 	var fixture FixtureDefinition
 	err = xml.Unmarshal(byteValue, &fixture)
 	if err != nil {
-		fmt.Println(err)
-		return err
+		fmt.Printf("Cannot unmarshal file: %v\n", err)
+		return nil, err
 	}
 
-	spew.Dump(fixture)
-	println("-----------------------------------------------")
+	return &fixture, nil
+}
+
+// Print this print a qlc plo ficture definition
+func Print(fixture *FixtureDefinition) {
+
+	println("---------------QLCPlus Fixture----------------")
 
 	for _, channel := range fixture.Channels {
 
@@ -160,6 +162,4 @@ func ReadFixture(path string) error {
 			fmt.Printf("      Number: %v, Name: %v\n", channelMapping.ChannelName, channelMapping.Number)
 		}
 	}
-
-	return nil
 }
