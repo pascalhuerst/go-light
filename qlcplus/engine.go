@@ -7,11 +7,8 @@ import (
 	"os"
 )
 
-type Engine interface {
-}
-
-// Root type of this XML
-type Root struct {
+// Engine type of this XML
+type Engine struct {
 	InputOutputMap InputOutputMap `xml:"InputOutputMap"`
 	Fixtures       []Fixture      `xml:"Fixture"`
 	FixtureGroups  []FixtureGroup `xml:"FixtureGroup"`
@@ -93,17 +90,22 @@ func ReadEngine(path string) error {
 
 	byteValue, _ := ioutil.ReadAll(xmlFile)
 
-	var root Root
-	err = xml.Unmarshal(byteValue, &root)
+	var engine Engine
+	err = xml.Unmarshal(byteValue, &engine)
 	if err != nil {
 		fmt.Println(err)
 		return err
 	}
 
-	//spew.Dump(fixture)
-	println("-----------------------------------------------")
+	return nil
+}
 
-	for _, universe := range root.InputOutputMap.Universes {
+// PrintEngine prints qlc engine data
+func PrintEngine(engine *Engine) {
+
+	println("---------------QLCPro Engine-----------------")
+
+	for _, universe := range engine.InputOutputMap.Universes {
 
 		fmt.Printf("Universe: Name=%v ID=%v\n", universe.Name, universe.ID)
 		fmt.Printf("  Output: Plugin=%v Line=%v\n", universe.Output.Plugin, universe.Output.Line)
@@ -114,10 +116,10 @@ func ReadEngine(path string) error {
 		)
 	}
 
-	fmt.Printf("\n\nTotal Universes: %v\n\n", len(root.InputOutputMap.Universes))
+	fmt.Printf("\n\nTotal Universes: %v\n\n", len(engine.InputOutputMap.Universes))
 	println("-----------------------------------------------")
 
-	for _, fixture := range root.Fixtures {
+	for _, fixture := range engine.Fixtures {
 		fmt.Printf("Fixture\n")
 		fmt.Printf("  Manufacturer=%v\n", fixture.Manufacturer)
 		fmt.Printf("  Model=%v\n", fixture.Model)
@@ -130,10 +132,10 @@ func ReadEngine(path string) error {
 		fmt.Printf("  ExcludeFade=%v\n", fixture.ExcludeFade)
 	}
 
-	fmt.Printf("\n\nTotal Fixtures: %v\n\n", len(root.Fixtures))
+	fmt.Printf("\n\nTotal Fixtures: %v\n\n", len(engine.Fixtures))
 	println("-----------------------------------------------")
 
-	for _, fixtureGroup := range root.FixtureGroups {
+	for _, fixtureGroup := range engine.FixtureGroups {
 		fmt.Printf("FixtureGroup ID=%v Name=%v w=%v h=%v\n",
 			fixtureGroup.ID,
 			fixtureGroup.Name,
@@ -150,10 +152,10 @@ func ReadEngine(path string) error {
 		}
 	}
 
-	fmt.Printf("\n\nTotal FixtureGroups: %v\n\n", len(root.FixtureGroups))
+	fmt.Printf("\n\nTotal FixtureGroups: %v\n\n", len(engine.FixtureGroups))
 	println("-----------------------------------------------")
 
-	for _, channelGroup := range root.ChannelGroups {
+	for _, channelGroup := range engine.ChannelGroups {
 		fmt.Printf("ChannelGroup ID=%v Name=%v Value=%v Channels=%v\n",
 			channelGroup.ID,
 			channelGroup.Name,
@@ -162,8 +164,7 @@ func ReadEngine(path string) error {
 		)
 	}
 
-	fmt.Printf("\n\nTotal ChannelGroups: %v\n\n", len(root.ChannelGroups))
+	fmt.Printf("\n\nTotal ChannelGroups: %v\n\n", len(engine.ChannelGroups))
 	println("-----------------------------------------------")
 
-	return nil
 }

@@ -5,6 +5,7 @@ import (
 
 	"github.com/pascalhuerst/go-light/data"
 	"github.com/pascalhuerst/go-light/qlcplus"
+	"github.com/pascalhuerst/go-light/server"
 )
 
 func main() {
@@ -15,15 +16,26 @@ func main() {
 		return
 	}
 
-	qlcplus.Print(qlcFixture)
+	qlcplus.PrintFixture(qlcFixture)
 
 	fixture := data.NewFixtureFromQlc(qlcFixture)
 
-	fmt.Printf("\n\n\n%+v", fixture)
-
-	err = data.WriteFixture(fixture)
+	err = data.WriteFixture("fixture.json", fixture)
 	if err != nil {
 		return
 	}
+
+	readFixture, err := data.ReadFixture("fixture.json")
+	if err != nil {
+		return
+	}
+
+	fmt.Printf("ReadBack:\n%+v\n", readFixture)
+
+	go server.StartHTTPServer(8123, readFixture)
+
+	fmt.Printf("#### Server Should be running!")
+
+	select {}
 
 }

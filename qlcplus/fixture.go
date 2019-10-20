@@ -112,8 +112,8 @@ func ReadFixture(path string) (*FixtureDefinition, error) {
 	return &fixture, nil
 }
 
-// Print this print a qlc plo ficture definition
-func Print(fixture *FixtureDefinition) {
+// PrintFixture prints a qlcpro ficture definition
+func PrintFixture(fixture *FixtureDefinition) {
 
 	println("---------------QLCPlus Fixture----------------")
 

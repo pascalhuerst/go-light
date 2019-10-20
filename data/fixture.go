@@ -3,6 +3,7 @@ package data
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 
 	"github.com/pascalhuerst/go-light/qlcplus"
@@ -14,15 +15,15 @@ type FixtureDefinition struct {
 	Name         string   `json:"name"` // Model
 	LampType     LampType `json:"type"`
 
-	Channels []Channel `json:"channel"`
-	Modes    []Mode    `json:"mode"`
+	Channels []Channel `json:"channels"`
+	Modes    []Mode    `json:"modes"`
 }
 
 // Channel channel
 type Channel struct {
 	Name         string       `json:"name"`
 	Group        Group        `json:"group"`
-	Capabilities []Capability `json:"capability"`
+	Capabilities []Capability `json:"capabilities"`
 }
 
 // ChannelMapping node in json
@@ -216,9 +217,7 @@ func NewFixtureFromQlc(source *qlcplus.FixtureDefinition) FixtureDefinition {
 }
 
 // WriteFixture saves a JSON of a FixtureDefinition
-func WriteFixture(f FixtureDefinition) error {
-
-	fileName := "/home/paso/go/src/github.com/holoplot/go-light/fixture.json" //fmt.Sprintf("./test.json", f.Name)
+func WriteFixture(fileName string, f FixtureDefinition) error {
 
 	file, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
@@ -239,4 +238,30 @@ func WriteFixture(f FixtureDefinition) error {
 	}
 
 	return nil
+}
+
+// ReadFixture reads a fixture from a JSON file
+func ReadFixture(path string) (*FixtureDefinition, error) {
+
+	jsonfile, err := os.Open(path)
+	if err != nil {
+		fmt.Printf("Cannot open file: %v\n", err.Error())
+		return nil, err
+	}
+	defer jsonfile.Close()
+
+	var byteValue []byte
+	byteValue, err = ioutil.ReadAll(jsonfile)
+	if err != nil {
+		fmt.Printf("Cannot read file: %v\n", err.Error())
+		return nil, err
+	}
+
+	var fixture FixtureDefinition
+	err = json.Unmarshal(byteValue, &fixture)
+	if err != nil {
+		fmt.Printf("Cannot unmarshal json data: %v\n", err.Error())
+	}
+
+	return &fixture, nil
 }
